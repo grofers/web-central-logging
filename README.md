@@ -1,3 +1,7 @@
+[![Coverage Status](https://coveralls.io/repos/github/grofers/logster/badge.svg?branch=master)](https://coveralls.io/github/grofers/logster?branch=master)
+[![Maintainability](https://api.codeclimate.com/v1/badges/4b8fd727d32ff49f9f4b/maintainability)](https://codeclimate.com/github/grofers/logster/maintainability)
+[![Test Coverage](https://api.codeclimate.com/v1/badges/4b8fd727d32ff49f9f4b/test_coverage)](https://codeclimate.com/github/grofers/logster/test_coverage)
+
 # Logster
 
 Utilities for aggregating frontend logs
