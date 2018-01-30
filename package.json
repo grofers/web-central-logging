@@ -6,8 +6,10 @@
   "scripts": {
     "precommit": "eslint . && npm run build",
     "test": "./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha test/*.js -- --require babel-register",
+    "coveralls": "cat ./coverage/lcov.info | coveralls",
     "clear:lib": "rm -rf lib",
-    "build": "npm run clear:lib && babel src --out-dir lib --source-maps"
+    "build": "npm run clear:lib && babel src --out-dir lib --source-maps",
+    "lint": "eslint --ext .js -f node_modules/eslint-detailed-reporter/lib/detailed.js -o ./eslint/report.html './src' './test'"
   },
   "repository": {
     "type": "git",
@@ -42,6 +44,7 @@
   "dependencies": {
     "bunyan": "^1.8.8",
     "bunyan-syslog": "git://github.com/grofers/node-bunyan-syslog.git#9bdb9eb62a763c7d30e032a619138032d5ff8771",
+    "coveralls": "^3.0.0",
     "isomorphic-fetch": "^2.2.1"
   }
 }
