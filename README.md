@@ -23,9 +23,7 @@ or
 ```js
 import { applyMiddleware, createStore, compose } from 'redux';
 
-import Logster from 'logster';
-import { crashReporter, actionLogger } from 'logster/<TBD>'
-
+import Logster, { crashReporter, actionLogger } from 'logster';
 
 const logger = new Logster({url: '/logs', maxBufferLength: 10 });
 
@@ -73,9 +71,15 @@ as `error` level logs.
 
 ##### Methods
 
-#### `logger.report(level, report[, state])`
+#### `logger.info(action[, state])`
 
-`logger.report(level, report[, state])` is a function which is used to register a new log in the buffer.
+#### `logger.warn(action[, state])`
+
+#### `logger.error(action[, state])`
+
+#### `logger.debug(action[, state])`
+
+#### `logger.emerg(action[, state])`
 
 #### `logger.setActionFilter(function)`
 
