@@ -19,7 +19,7 @@ describe('Timer', () => {
         timer = new Timer(cb, ms);
     });
     it('should start the timer', () => {
-        const args = {key1: 'arg1', key2: 'arg2'};
+        const args = { key1: 'arg1', key2: 'arg2' };
         timer.start(...args);
         clock.tick(10);
         cb.called.should.be.false;
