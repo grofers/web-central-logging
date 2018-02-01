@@ -263,4 +263,26 @@ describe('Logger', () => {
 
         logger.buffer.getBuffer().should.be.eql(expectedBuffer);
     });
+
+    it('should run all reporter functions', () => {
+        const spy = sinon.spy();
+        const { report } = Logster.prototype;
+        Logster.prototype.report = spy;
+
+        const logger = new Logster({ url: 'http://mock/log' });
+
+        logger.info('log1');
+        logger.warn('log2');
+        logger.error('log3');
+        logger.emerg('log4');
+        logger.debug('log5');
+
+        spy.getCalls()[0].args.should.be.eql(['info', 'log1', undefined]);
+        spy.getCalls()[1].args.should.be.eql(['warn', 'log2', undefined]);
+        spy.getCalls()[2].args.should.be.eql(['error', 'log3', undefined]);
+        spy.getCalls()[3].args.should.be.eql(['emerg', 'log4', undefined]);
+        spy.getCalls()[4].args.should.be.eql(['debug', 'log5', undefined]);
+
+        Logster.prototype.report = report;
+    });
 });

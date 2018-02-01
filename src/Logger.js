@@ -16,7 +16,7 @@ class Logger {
         fireOnGlobalErrors = true,
         interval, // if interval is not set (  ), timer will not start
     }) {
-        if (!(this instanceof Logger)) { return new Logger(); }
+        if (!(this instanceof Logger)) { return new Logger({}); }
         if (typeof url === 'undefined' && typeof __send__ === 'undefined') {
             throw new Error('either set url or __send__');
         }
@@ -154,6 +154,12 @@ class Logger {
         }
         return Promise.resolve('Required sessionId not set');
     }
+
+    info(action, state) { this.report('info', action, state); }
+    warn(action, state) { this.report('warn', action, state); }
+    error(action, state) { this.report('error', action, state); }
+    debug(action, state) { this.report('debug', action, state); }
+    emerg(action, state) { this.report('emerg', action, state); }
 }
 
 export default Logger;
