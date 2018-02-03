@@ -22,9 +22,7 @@ class Logger {
         }
 
         this.maxBufferLength = maxBufferLength;
-        this.actionFilter = f => f;
         this.automaticFlush = automaticFlush;
-        this.stateFilter = () => ({});
         this.overwriteBuffer = overwriteBuffer;
         this.interval = interval;
         this.fetchConfig = fetchConfig;
@@ -45,24 +43,21 @@ class Logger {
     _bufferUp(action, state, level, extra) {
         const {
             buffer,
-            actionFilter,
-            stateFilter,
             overwriteBuffer,
         } = this;
+
         if (buffer.isFull()) {
             // if overwriteBuffer set to false, silently drop all new logs
             if (overwriteBuffer) buffer.shift();
         }
-        const filteredAction = actionFilter(action);
-        const filteredState = stateFilter(state);
-        // if filteredAction doesn't return an object type then silently skilp that action
-        if (filteredAction && typeof filteredAction === 'object') {
+
+        if (action) {
             buffer.push({
                 timestamp: Date.now(),
-                state: filteredState,
+                state,
                 extra,
                 level,
-                action: filteredAction,
+                action,
             });
         }
     }
@@ -99,18 +94,6 @@ class Logger {
 
     unsetSessionId() {
         this.sessionId = undefined;
-    }
-
-    setActionFilter(actionFilter) {
-        if (typeof actionFilter === 'function') {
-            this.actionFilter = actionFilter;
-        } else throw new Error('actionFilter must be a function');
-    }
-
-    setStateFilter(stateFilter) {
-        if (typeof stateFilter === 'function') {
-            this.stateFilter = stateFilter;
-        } else throw new Error('actionFilter must be a function');
     }
 
     setExtraParams(key, value) {

@@ -8,7 +8,7 @@ const should = chai.should();
 
 const ACTION1 = { type: 'MOCK_ACTION' };
 const ACTION2 = { type: 'MOCK_ACTION2' };
-const STATE = { key: 'value' };
+const state = { key: 'value' };
 
 describe('Logger', () => {
     let clock;
@@ -21,19 +21,12 @@ describe('Logger', () => {
         expect(() => new Logster()).to.throw();
     });
 
-    it('should set defaults correctly', () => {
-        const logger = new Logster({ url: '/log' });
-
-        logger.actionFilter(ACTION1).should.be.eql(ACTION1);
-        logger.stateFilter(STATE).should.be.eql({});
-    });
-
     it('should not flush if automaticFlush is off', () => {
         const logger = new Logster({ url: '/log', automaticFlush: false, maxBufferLength: 2 });
         logger.flush = sinon.spy();
 
-        logger.report('info', ACTION1, STATE);
-        logger.report('info', ACTION2, STATE);
+        logger.report('info', ACTION1, state);
+        logger.report('info', ACTION2, state);
 
         logger.flush.called.should.be.false;
     });
@@ -42,8 +35,8 @@ describe('Logger', () => {
         const logger = new Logster({ url: '/log', automaticFlush: true, maxBufferLength: 2 });
         logger.flush = sinon.spy();
 
-        logger.report('info', ACTION1, STATE);
-        logger.report('info', ACTION2, STATE);
+        logger.report('info', ACTION1, state);
+        logger.report('info', ACTION2, state);
 
         logger.flush.calledOnce.should.be.true;
     });
@@ -52,19 +45,19 @@ describe('Logger', () => {
         const logger = new Logster({ url: '/log', automaticFlush: false, maxBufferLength: 2 });
         const ACTION3 = { type: 'MOCK_ACTION3' };
 
-        logger.report('info', ACTION1, STATE);
-        logger.report('info', ACTION2, STATE);
-        logger.report('info', ACTION3, STATE);
+        logger.report('info', ACTION1, state);
+        logger.report('info', ACTION2, state);
+        logger.report('info', ACTION3, state);
         const expectedBuffer = [{
             timestamp: Date.now(), // fake time
             extra: {},
-            state: {},
+            state,
             level: 'info',
             action: ACTION2,
         }, {
             timestamp: Date.now(),
             extra: {},
-            state: {},
+            state,
             level: 'info',
             action: ACTION3,
         }];
@@ -76,8 +69,8 @@ describe('Logger', () => {
         const stub = sinon.stub(Logster.prototype, 'flush');
         const logger = new Logster({ url: 'http://mock/log', maxBufferLength: 20, interval: 500 });
 
-        logger.report('info', ACTION1, STATE);
-        logger.report('info', ACTION2, STATE);
+        logger.report('info', ACTION1, state);
+        logger.report('info', ACTION2, state);
 
         clock.tick(600);
         stub.called.should.be.true;
@@ -93,19 +86,19 @@ describe('Logger', () => {
             __send__
         });
 
-        logger.report('info', ACTION1, STATE);
-        logger.report('info', ACTION2, STATE);
+        logger.report('info', ACTION1, state);
+        logger.report('info', ACTION2, state);
 
         const expectedLogs = [{
             timestamp: Date.now(), // fake time
             extra: {},
-            state: {},
+            state,
             level: 'info',
             action: ACTION1,
         }, {
             timestamp: Date.now(),
             extra: {},
-            state: {},
+            state,
             level: 'info',
             action: ACTION2,
         }];
@@ -123,8 +116,8 @@ describe('Logger', () => {
 
         logger = new Logster({ url: 'http://mock/log', maxBufferLength: 2, sessionIdRequired: true });
 
-        logger.report('info', ACTION1, STATE);
-        logger.report('info', ACTION2, STATE);
+        logger.report('info', ACTION1, state);
+        logger.report('info', ACTION2, state);
 
         stub.calledOnce.should.be.true;
         stub.firstCall.returnValue.should.be.a('Promise');
@@ -147,8 +140,8 @@ describe('Logger', () => {
 
         logger.setSessionId('ID');
 
-        logger.report('info', ACTION1, STATE);
-        logger.report('info', ACTION2, STATE);
+        logger.report('info', ACTION1, state);
+        logger.report('info', ACTION2, state);
 
         __send__.called.should.be.true;
         __send__.getCalls()[0].args[1].should.be.equal('ID');
@@ -164,19 +157,19 @@ describe('Logger', () => {
         logger.addHook(spy1);
         logger.addHook(spy2);
 
-        logger.report('info', ACTION1, STATE);
-        logger.report('info', ACTION2, STATE);
+        logger.report('info', ACTION1, state);
+        logger.report('info', ACTION2, state);
 
         const expectedLogs = [{
             timestamp: Date.now(), // fake time
             extra: {},
-            state: {},
+            state,
             level: 'info',
             action: ACTION1,
         }, {
             timestamp: Date.now(),
             extra: {},
-            state: {},
+            state,
             level: 'info',
             action: ACTION2,
         }];
@@ -203,12 +196,12 @@ describe('Logger', () => {
 
         logger.setExtraParams('somekey', extraParams);
 
-        logger.report('info', ACTION1, STATE);
+        logger.report('info', ACTION1, state);
 
         const expectedLogs = [{
             timestamp: Date.now(), // fake time
             extra: { somekey: extraParams },
-            state: {},
+            state,
             level: 'info',
             action: ACTION1,
         }];
@@ -227,41 +220,6 @@ describe('Logger', () => {
         logger.unsetSessionId();
 
         expect(logger.sessionId).to.be.a('undefined');
-    });
-
-    it('should add filters properly', () => {
-        const logger = new Logster({
-            url: 'http://mock/log',
-            maxBufferLength: 18,
-        });
-        logger.setActionFilter(() => null);
-
-        logger.report('info', ACTION1, STATE);
-        logger.report('info', ACTION2, STATE);
-
-        let expectedBuffer = [];
-        logger.buffer.getBuffer().should.be.eql(expectedBuffer);
-
-        logger.setActionFilter(f => f);
-        logger.setStateFilter(f => f);
-
-        logger.report('info', ACTION1, STATE);
-        logger.report('info', ACTION2, STATE);
-        expectedBuffer = [{
-            timestamp: Date.now(), // fake time
-            extra: {},
-            state: STATE,
-            level: 'info',
-            action: ACTION1,
-        }, {
-            timestamp: Date.now(),
-            extra: {},
-            state: STATE,
-            level: 'info',
-            action: ACTION2,
-        }];
-
-        logger.buffer.getBuffer().should.be.eql(expectedBuffer);
     });
 
     it('should run all reporter functions', () => {
