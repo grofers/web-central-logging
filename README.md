@@ -25,7 +25,7 @@ import { applyMiddleware, createStore, compose } from 'redux';
 
 import Logster, { crashReporter, actionLogger } from 'logster';
 
-const logger = new Logster({url: '/logs', maxBufferLength: 10 });
+const logger = new Logster({ url: '/logs', maxBufferLength: 10 });
 
 const store = createStore(
   reducer,
@@ -44,12 +44,13 @@ check [server](#server) config for more details.
 
 ### ActionLogger
 
-`actionLogger(logger)` is a redux middleware that adds redux actions in the logster's buffer as `info` level logs.
-actionFilters and stateFilters and be applied to filter out the is logged. [see more](#filters)
+`actionLogger(logger [,actionFilter, stateFilter, level])` is a redux middleware that adds redux actions in the logster's buffer as `info` level logs.
+
+**actionFilters** and **stateFilters** can be applied to filter out what is logged. [see more](#filters)
 
 ### CrashReporter
 
-`crashReporter(logger)` is a redux middleware which reports any crash, uncaught errors, uncaught promises to logster
+`crashReporter(logger [,stateFilter, level])` is a redux middleware which reports any crash, uncaught errors, uncaught promises to logster
 as `error` level logs.
 
 ## Logster
@@ -71,36 +72,30 @@ as `error` level logs.
 
 ##### Methods
 
-#### `logger.info(action[, state])`
+##### `logger.info(log[, state])`
 
-#### `logger.warn(action[, state])`
+##### `logger.warn(log[, state])`
 
-#### `logger.error(action[, state])`
+##### `logger.error(log[, state])`
 
-#### `logger.debug(action[, state])`
+##### `logger.debug(log[, state])`
 
-#### `logger.emerg(action[, state])`
+##### `logger.emerg(log[, state])`
 
-#### `logger.setActionFilter(function)`
+*NOTE: state can be anything that represents the state of application at time of log*
 
-A utility function to filter out undesired or sensitive data. [see more](#filters)
+##### `logger.flush()`
 
-#### `logger.setStateFilter(function)`
-
-A utility function to filter out State. By default every thing is filtered out. [see more](#filters)
-
-#### `logger.flush()`
-
-Calling this will flush all the current logs to the server.
+Calling flush will flush all the current logs to the server.
 `return` a fetch promise.
 
-#### `logger.addHooks(function)`
+##### `logger.addHooks(function)`
 
 Hooks are functions that receives the Buffered logs and sessionId
 
 Note: Hooks are automatically called before `flush` so mutating the logs array will result in mutation in subsequent hooks call and flush call as well.
 
-##### Example
+###### Example
 
   Register Logster's sessionId with Sentry
 
@@ -115,16 +110,16 @@ Note: Hooks are automatically called before `flush` so mutating the logs array w
     });
 ```
 
-#### `logger.setSessionId(string)`
+##### `logger.setSessionId(string)`
 
 It is used to set session Id.
 eg: when a user logs in, `logger.setSessionId(string)` can be called inside a reducer to create a session
 
-#### `logger.setExtraDataCallback(function)`
+##### `logger.setExtraDataCallback(function)`
 
 This can be used to pass extra fields to every single log line.
 
-It is called before every `logger.report()` call.
+It is called before every logging happens.
 
 ## Filters
 
@@ -222,7 +217,14 @@ In case you are not using express as backend or want to do something different w
             },
             "level": "info",
             "extra" : {},
-            "state": {},
+            "state": {
+                before: {
+                    "key": "i am the filtered state before action"
+                },
+                after: {
+                    "key": "i am the filtered state after action"
+                }
+            },
         }],
          "sessionId": "ua78bxj34",
     }
