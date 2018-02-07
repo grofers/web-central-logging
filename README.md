@@ -119,7 +119,7 @@ eg: when a user logs in, `logger.setSessionId(string)` can be called inside a re
 
 This can be used to pass extra fields to every single log line.
 
-It is called before every logging happens.
+It is called before every logging.
 
 ## Filters
 
