@@ -5,14 +5,14 @@ const actionLogger = (
     level = 'info',
 ) => store => next => (action) => {
     const filteredAction = actionFilter(action);
-    const filteredStateBA = stateFilter(store.getState());
+    const currState = stateFilter(store.getState());
 
     next(action);
 
-    const filteredStateAA = stateFilter(store.getState());
-    const state = (filteredStateBA || filteredStateAA) ? {
-        before: filteredStateBA,
-        after: filteredStateAA,
+    const nextState = stateFilter(store.getState());
+    const state = (currState || nextState) ? {
+        before: currState,
+        after: nextState,
     } : {};
 
     logger.report(level, filteredAction, state);
