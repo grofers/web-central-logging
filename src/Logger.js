@@ -40,7 +40,7 @@ class Logger {
         if (__send__ && typeof __send__ === 'function') this.__send__ = __send__;
     }
 
-    _bufferUp(action, state, level, extra) {
+    _bufferUp(log, state, level, extra) {
         const {
             buffer,
             overwriteBuffer,
@@ -51,13 +51,13 @@ class Logger {
             if (overwriteBuffer) buffer.shift();
         }
 
-        if (action) {
+        if (log) {
             buffer.push({
                 timestamp: Date.now(),
                 state,
                 extra,
                 level,
-                action,
+                action: log,
             });
         }
     }
@@ -70,14 +70,14 @@ class Logger {
         }
     }
 
-    report(level, action, state) {
+    report(level, log, state) {
         const {
             automaticFlush,
             interval,
             buffer,
             extraParams,
         } = this;
-        this._bufferUp(action, state, level, extraParams);
+        this._bufferUp(log, state, level, extraParams);
         if (automaticFlush) {
             if (buffer.isFull()) {
                 this.flush();
@@ -138,11 +138,11 @@ class Logger {
         return Promise.resolve('Required sessionId not set');
     }
 
-    info(action, state) { this.report('info', action, state); }
-    warn(action, state) { this.report('warn', action, state); }
-    error(action, state) { this.report('error', action, state); }
-    debug(action, state) { this.report('debug', action, state); }
-    emerg(action, state) { this.report('emerg', action, state); }
+    info(log, state) { this.report('info', log, state); }
+    warn(log, state) { this.report('warn', log, state); }
+    error(log, state) { this.report('error', log, state); }
+    debug(log, state) { this.report('debug', log, state); }
+    emerg(log, state) { this.report('emerg', log, state); }
 }
 
 export default Logger;

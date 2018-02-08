@@ -18,7 +18,7 @@ or
 
 ```yarn add git+https://github.com/grofers/logster.git```
 
-## Usage
+## Usage with Redux
 
 ```js
 import { applyMiddleware, createStore, compose } from 'redux';
@@ -36,6 +36,22 @@ const store = createStore(
     actionLogger(logger)
   ])
 );
+```
+
+## Usage without redux
+
+```js
+import Logster from 'logster';
+
+const logger = new Logster({ url: '/logs', maxBufferLength: 10 });
+
+logger.info({ message: 'User has logged in' });
+
+someCallback((err) => {
+    if(err) {
+        logger.error(err);
+    }
+});
 ```
 
 Logster will send the buffered logs in a POST request to the backend.
