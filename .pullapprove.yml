@@ -1,0 +1,15 @@
+approve_by_comment: true
+approve_regex: ^Approved
+reject_regex: ^Rejected
+reset_on_push: true
+reviewers:
+  members:
+  - priyansh1161
+  - anubhav7495
+  - DarkPrince304
+  - dash1291
+  - nimishsinghal
+  - vaidik
+  - ashbhir
+  name: pullapprove
+  required: 2
