@@ -9,7 +9,7 @@ const actionLogger = (
 
     next(action);
 
-    const nextState = stateFilter(store.getState());
+    const nextState = stateFilter(store.getState(), action);
     const state = (currState || nextState) ? {
         before: currState,
         after: nextState,
