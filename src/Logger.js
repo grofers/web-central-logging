@@ -16,15 +16,13 @@ class Logger {
         fireOnGlobalErrors = true,
         interval, // if interval is not set (  ), timer will not start
     }) {
-        if (!(this instanceof Logger)) { return new Logger(); }
+        if (!(this instanceof Logger)) { return new Logger({}); }
         if (typeof url === 'undefined' && typeof __send__ === 'undefined') {
             throw new Error('either set url or __send__');
         }
 
         this.maxBufferLength = maxBufferLength;
-        this.actionFilter = f => f;
         this.automaticFlush = automaticFlush;
-        this.stateFilter = () => ({});
         this.overwriteBuffer = overwriteBuffer;
         this.interval = interval;
         this.fetchConfig = fetchConfig;
@@ -42,27 +40,24 @@ class Logger {
         if (__send__ && typeof __send__ === 'function') this.__send__ = __send__;
     }
 
-    _bufferUp(action, state, level, extra) {
+    _bufferUp(log, state, level, extra) {
         const {
             buffer,
-            actionFilter,
-            stateFilter,
             overwriteBuffer,
         } = this;
+
         if (buffer.isFull()) {
             // if overwriteBuffer set to false, silently drop all new logs
             if (overwriteBuffer) buffer.shift();
         }
-        const filteredAction = actionFilter(action);
-        const filteredState = stateFilter(state);
-        // if filteredAction doesn't return an object type then silently skilp that action
-        if (filteredAction && typeof filteredAction === 'object') {
+
+        if (log) {
             buffer.push({
                 timestamp: Date.now(),
-                state: filteredState,
+                state,
                 extra,
                 level,
-                action: filteredAction,
+                action: log,
             });
         }
     }
@@ -75,14 +70,14 @@ class Logger {
         }
     }
 
-    report(level, action, state) {
+    report(level, log, state) {
         const {
             automaticFlush,
             interval,
             buffer,
             extraParams,
         } = this;
-        this._bufferUp(action, state, level, extraParams);
+        this._bufferUp(log, state, level, extraParams);
         if (automaticFlush) {
             if (buffer.isFull()) {
                 this.flush();
@@ -99,18 +94,6 @@ class Logger {
 
     unsetSessionId() {
         this.sessionId = undefined;
-    }
-
-    setActionFilter(actionFilter) {
-        if (typeof actionFilter === 'function') {
-            this.actionFilter = actionFilter;
-        } else throw new Error('actionFilter must be a function');
-    }
-
-    setStateFilter(stateFilter) {
-        if (typeof stateFilter === 'function') {
-            this.stateFilter = stateFilter;
-        } else throw new Error('actionFilter must be a function');
     }
 
     setExtraParams(key, value) {
@@ -154,6 +137,12 @@ class Logger {
         }
         return Promise.resolve('Required sessionId not set');
     }
+
+    info(log, state) { this.report('info', log, state); }
+    warn(log, state) { this.report('warn', log, state); }
+    error(log, state) { this.report('error', log, state); }
+    debug(log, state) { this.report('debug', log, state); }
+    emerg(log, state) { this.report('emerg', log, state); }
 }
 
 export default Logger;
