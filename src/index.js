@@ -1,4 +1,4 @@
-import Logster from './Logger';
+import WebCLS from './Logger';
 
 export { actionLogger, crashReporter } from './reduxMiddlewares';
-export default Logster;
+export default WebCLS;

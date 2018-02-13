@@ -1,5 +1,5 @@
 {
-  "name": "logster",
+  "name": "web-central-logging",
   "version": "0.2.0",
   "description": "Utilities for aggregating frontend logs",
   "main": "lib/",
