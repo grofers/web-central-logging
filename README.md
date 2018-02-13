@@ -175,13 +175,22 @@ This filter filter outs current state. By default everything is filtered out.
 ```js
 // Filter.js
 
-function stateFilter(state) {
-  const newState = JSON.parse(JSON.stringify(state));
-  if (newState.someImportantField) {
-    // it's a good practice to log minimum to no state otherwise sending logs can consume a lot of bandwidth and may result in 413.
-    return newState.someImportantField;
-  }
-  return null; // don't log state
+function stateFilter(state, action) {
+    const newState = JSON.parse(JSON.stringify(state));
+    switch (action.type) {
+        case 'ADD_TO_CART':
+            return {
+                products: newState.products
+            };
+        case 'USER_LOGGED_IN':
+            // let's say we don't want to log access token
+            newState.user.accessToken = null;
+            return {
+                user: state.user
+            };
+        default:
+            return null; // don't log state
+    }
 }
 ```
 
