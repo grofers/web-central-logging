@@ -2,7 +2,7 @@
 [![Coverage Status](https://coveralls.io/repos/github/grofers/logster/badge.svg?branch=master)](https://coveralls.io/github/grofers/logster?branch=master)
 [![Maintainability](https://api.codeclimate.com/v1/badges/4b8fd727d32ff49f9f4b/maintainability)](https://codeclimate.com/github/grofers/logster/maintainability)
 
-# Logster
+# web-central-logging
 
 Utilities for aggregating frontend logs
 
@@ -12,20 +12,20 @@ Utilities for aggregating frontend logs
 
 ## Installation
 
-```npm install git+https://github.com/grofers/logster.git```
+```npm install web-central-logging```
 
 or
 
-```yarn add git+https://github.com/grofers/logster.git```
+```yarn add web-central-logging```
 
 ## Usage with Redux
 
 ```js
 import { applyMiddleware, createStore, compose } from 'redux';
 
-import Logster, { crashReporter, actionLogger } from 'logster';
+import WebCLS, { crashReporter, actionLogger } from 'web-central-logging';
 
-const logger = new Logster({ url: '/logs', maxBufferLength: 10 });
+const logger = new WebCLS({ url: '/logs', maxBufferLength: 10 });
 
 const store = createStore(
   reducer,
@@ -41,9 +41,9 @@ const store = createStore(
 ## Usage without redux
 
 ```js
-import Logster from 'logster';
+import WebCLS from 'web-central-logging';
 
-const logger = new Logster({ url: '/logs', maxBufferLength: 10 });
+const logger = new WebCLS({ url: '/logs', maxBufferLength: 10 });
 
 logger.info({ message: 'User has logged in' });
 
@@ -54,24 +54,24 @@ someCallback((err) => {
 });
 ```
 
-Logster will send the buffered logs in a POST request to the backend.
+WebCLS will send the buffered logs in a POST request to the backend.
 
 check [server](#server) config for more details.
 
 ### ActionLogger
 
-`actionLogger(logger [,actionFilter, stateFilter, level])` is a redux middleware that adds redux actions in the logster's buffer as `info` level logs.
+`actionLogger(logger [,actionFilter, stateFilter, level])` is a redux middleware that adds redux actions into the WebCLS's buffer as `info` level logs.
 
 **actionFilters** and **stateFilters** can be applied to filter out what is logged. [see more](#filters)
 
 ### CrashReporter
 
-`crashReporter(logger [,stateFilter, level])` is a redux middleware which reports any crash, uncaught errors, uncaught promises to logster
+`crashReporter(logger [,stateFilter, level])` is a redux middleware which reports any crash, uncaught errors, uncaught promises to WebCLS
 as `error` level logs.
 
-## Logster
+## WebCLS
 
-### `Logster(config)`
+### `WebCLS(config)`
 
 | Property | Required | Type | Default | Description |
 |----------|----------|------|---------|-------------|
@@ -113,7 +113,7 @@ Note: Hooks are automatically called before `flush` so mutating the logs array w
 
 ###### Example
 
-  Register Logster's sessionId with Sentry
+  Register WebCLS's sessionId with Sentry
 
 ```js
     logger.addHook((logs, sessionId) => {
@@ -139,14 +139,14 @@ It is called before every logging.
 
 ## Filters
 
-Filters are functions which filter of data to be logged. They are highly useful when you want to hide sensitive data in logs or reduce the payload size.
+Filters are pure functions which filters the data to be logged. They are highly useful when you want to hide sensitive data in logs or reduce the payload size.
 Filters should be pure functions.
 
 There are two types of Filters
 
 #### ActionFilter
 
-This is used to filter Actions. By default nothing is filtered out
+This is used to filter Actions. By default everything in action is logged
 
 ##### Example
 
@@ -169,7 +169,9 @@ function actionFilter(action) {
 }
 ```
 #### StateFilter
-This filter filter outs current state. By default everything is filtered out.
+
+This is used to filter state. By default state is not logged but if you want to log state this filter can be used.
+
 ##### Example
 
 ```js
@@ -196,17 +198,17 @@ function stateFilter(state, action) {
 
 ## Server
 
-By default Logster will send a fetch request to `url` field provided in the config.
+By default WebCLS will send a fetch request to `url` field provided in the config.
 
 #### Integration with Express
-Logster comes with a middleware for express that send logs to syslogs
+WebCLS comes with a middleware for express that send logs to syslogs
 
 ```js
 // app.js 
 
 const express = require('express');
 const bodyparser = require('body-parser');
-const syslogsLogger = require('logster/lib/syslogsLogger');
+const syslogsLogger = require('web-central-logging/lib/syslogsLogger');
 
 const app = express();
 
@@ -229,7 +231,7 @@ module.exports = app;
 
 
 ### Request Body
-In case you are not using express as backend or want to do something different with logs, you can easily do that as Logster sends a POST request to provided `url`.
+In case you are not using express as backend or want to do something different with logs, you can easily do that as WebCLS sends a POST request to provided `url`.
 
 ##### Example
 ```json
@@ -243,10 +245,10 @@ In case you are not using express as backend or want to do something different w
             "level": "info",
             "extra" : {},
             "state": {
-                before: {
+                "before": {
                     "key": "i am the filtered state before action"
                 },
-                after: {
+                "after": {
                     "key": "i am the filtered state after action"
                 }
             },
@@ -261,7 +263,7 @@ In case you are not using express as backend or want to do something different w
 - `timestamp` is the time at which log was registered.
 - `action` is a filtered or default redux action.
 - `state` is a filtered or default redux state. By default it is `{}`
-- `extra` this field can be used to send extra params with each logs by setting `extraParams` object in Logster config
+- `extra` this field can be used to send extra params with each logs by setting `extraParams` object in WebCLS config
 - `level` is syslog level, actionLogger sets level `info` for each log and crashReporter sets `error` level for each log.
 
 ## How to Contribute
