@@ -1,9 +1,20 @@
+const defaultActionLoggerOptions = {
+    actionFilter: f => f,
+    stateFilter: () => null,
+    level: 'info',
+};
+
+const defaultCrashReporterOptions = {
+    stateFilter: () => null,
+    level: 'error'
+}
+
 const actionLogger = (
     logger,
-    actionFilter = f => f,
-    stateFilter = () => null,
-    level = 'info',
+    options = {},
 ) => store => next => (action) => {
+    const { actionFilter, stateFilter, level } = Object.assign(defaultActionLoggerOptions, options);
+
     const filteredAction = actionFilter(action);
     const currState = stateFilter(store.getState());
 
@@ -20,9 +31,10 @@ const actionLogger = (
 
 const crashReporter = (
     logger,
-    stateFilter = () => null,
-    level = 'error'
+    options = {}
 ) => store => next => (action) => {
+    const { stateFilter, level } = Object.assign(defaultCrashReporterOptions, options);
+
     try {
         return next(action);
     } catch (e) {
