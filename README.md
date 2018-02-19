@@ -60,14 +60,24 @@ check [server](#server) config for more details.
 
 ### ActionLogger
 
-`actionLogger(logger [,actionFilter, stateFilter, level])` is a redux middleware that adds redux actions into the WebCLS's buffer as `info` level logs.
+`actionLogger(logger [, options])` is a redux middleware that adds redux actions into the WebCLS's buffer as `info` level logs.
+
+| Property | Required | Type | Default | Description |
+|----------|----------|------|---------|-------------|
+| actionFilter | No | Function | `f => f` | function to filter actions [See more](#actionfilter)
+| stateFilter | No | Function | `() => null` | function to filter state [See more](#statefilter)
+| level | No | String | `info` | syslog level
 
 **actionFilters** and **stateFilters** can be applied to filter out what is logged. [see more](#filters)
 
 ### CrashReporter
 
-`crashReporter(logger [,stateFilter, level])` is a redux middleware which reports any crash, uncaught errors, uncaught promises to WebCLS
-as `error` level logs.
+`crashReporter(logger [, options])` is a redux middleware which reports any crash, uncaught errors & uncaught promises to WebCLS.
+
+| Property | Required | Type | Default | Description |
+|----------|----------|------|---------|-------------|
+| stateFilter | No | Function | `() => null` | function to filter state [See more](#statefilter)
+| level | No | String | `info` | syslog level
 
 ## WebCLS
 
