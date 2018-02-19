@@ -70,8 +70,8 @@ describe('actionLogger', () => {
     });
 
     it('should add filters properly', () => {
-        actionLogger(logger, () => null)(store)(next)(action1);
-        actionLogger(logger, () => null)(store)(next)(action2);
+        actionLogger(logger, { actionFilter: () => null })(store)(next)(action1);
+        actionLogger(logger, { actionFilter: () => null })(store)(next)(action2);
 
         let expectedBuffer = [];
         logger.buffer.getBuffer().should.be.eql(expectedBuffer);
@@ -80,10 +80,10 @@ describe('actionLogger', () => {
         const stateFilter = f => f;
 
         getState.resetHistory();
-        actionLogger(logger, actionFilter, stateFilter)(store)(next)(action1);
+        actionLogger(logger, { actionFilter, stateFilter })(store)(next)(action1);
 
         getState.resetHistory();
-        actionLogger(logger, actionFilter, stateFilter)(store)(next)(action1);
+        actionLogger(logger, { actionFilter, stateFilter })(store)(next)(action1);
 
         expectedBuffer = [{
             timestamp: Date.now(), // fake time
