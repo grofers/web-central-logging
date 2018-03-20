@@ -16,7 +16,9 @@ class Logger {
         fireOnGlobalErrors = true,
         interval, // if interval is not set (  ), timer will not start
     }) {
-        if (!(this instanceof Logger)) { return new Logger({}); }
+        if (!(this instanceof Logger)) {
+            return new Logger({});
+        }
         if (typeof url === 'undefined' && typeof __send__ === 'undefined') {
             throw new Error('either set url or __send__');
         }
@@ -30,6 +32,7 @@ class Logger {
         this.sessionIdRequired = sessionIdRequired;
         this.extraParams = {};
         this.flush = this.flush.bind(this);
+        this._onErrorHandlerInstalled = false;
 
         // eslint-disable-next-line no-buffer-constructor
         this.buffer = new Buffer(maxBufferLength);
@@ -64,9 +67,19 @@ class Logger {
 
     registerErrorHandler() {
         if (typeof window !== 'undefined') {
-            window.addEventListener('error', () => {
-                this.flush();
-            });
+            if (this._onErrorHandlerInstalled) {
+                return;
+            }
+            const self = this;
+            this._oldOnerrorHandler = window.error;
+            window.onerror = function handleGlobalError(...args) {
+                self.flush();
+                if (self._oldOnerrorHandler) {
+                    return self._oldOnerrorHandler.apply(this, args);
+                }
+                return false;
+            };
+            this._onErrorHandlerInstalled = true;
         }
     }
 
