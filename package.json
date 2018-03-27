@@ -1,6 +1,6 @@
 {
-  "name": "logster",
-  "version": "0.1.0",
+  "name": "web-central-logging",
+  "version": "1.0.0",
   "description": "Utilities for aggregating frontend logs",
   "main": "lib/",
   "scripts": {
@@ -29,6 +29,7 @@
     "body-parser": "^1.18.2",
     "chai": "^4.1.2",
     "chai-http": "^3.0.0",
+    "coveralls": "^3.0.0",
     "eslint": "^4.14.0",
     "eslint-config-airbnb": "^16.1.0",
     "eslint-config-esnext": "^2.0.0",
@@ -44,7 +45,6 @@
   "dependencies": {
     "bunyan": "^1.8.8",
     "bunyan-syslog": "git://github.com/grofers/node-bunyan-syslog.git#9bdb9eb62a763c7d30e032a619138032d5ff8771",
-    "coveralls": "^3.0.0",
     "isomorphic-fetch": "^2.2.1"
   }
 }

@@ -2,13 +2,13 @@
 import sinon from 'sinon';
 import chai, { expect } from 'chai';
 
-import Logster from '../src/Logger';
+import WebCLS from '../src/Logger';
 
 const should = chai.should();
 
 const ACTION1 = { type: 'MOCK_ACTION' };
 const ACTION2 = { type: 'MOCK_ACTION2' };
-const STATE = { key: 'value' };
+const state = { key: 'value' };
 
 describe('Logger', () => {
     let clock;
@@ -18,53 +18,46 @@ describe('Logger', () => {
     after(() => clock.restore());
 
     it('should throw if one of url or __send__ is not provided', () => {
-        expect(() => new Logster()).to.throw();
-    });
-
-    it('should set defaults correctly', () => {
-        const logger = new Logster({ url: '/log' });
-
-        logger.actionFilter(ACTION1).should.be.eql(ACTION1);
-        logger.stateFilter(STATE).should.be.eql({});
+        expect(() => new WebCLS()).to.throw();
     });
 
     it('should not flush if automaticFlush is off', () => {
-        const logger = new Logster({ url: '/log', automaticFlush: false, maxBufferLength: 2 });
+        const logger = new WebCLS({ url: '/log', automaticFlush: false, maxBufferLength: 2 });
         logger.flush = sinon.spy();
 
-        logger.report('info', ACTION1, STATE);
-        logger.report('info', ACTION2, STATE);
+        logger.report('info', ACTION1, state);
+        logger.report('info', ACTION2, state);
 
         logger.flush.called.should.be.false;
     });
 
     it('should flush if automaticFlush is on', () => {
-        const logger = new Logster({ url: '/log', automaticFlush: true, maxBufferLength: 2 });
+        const logger = new WebCLS({ url: '/log', automaticFlush: true, maxBufferLength: 2 });
         logger.flush = sinon.spy();
 
-        logger.report('info', ACTION1, STATE);
-        logger.report('info', ACTION2, STATE);
+        logger.report('info', ACTION1, state);
+        logger.report('info', ACTION2, state);
 
         logger.flush.calledOnce.should.be.true;
     });
 
     it('should overwrite previous logs when overflow', () => {
-        const logger = new Logster({ url: '/log', automaticFlush: false, maxBufferLength: 2 });
+        const logger = new WebCLS({ url: '/log', automaticFlush: false, maxBufferLength: 2 });
         const ACTION3 = { type: 'MOCK_ACTION3' };
 
-        logger.report('info', ACTION1, STATE);
-        logger.report('info', ACTION2, STATE);
-        logger.report('info', ACTION3, STATE);
+        logger.report('info', ACTION1, state);
+        logger.report('info', ACTION2, state);
+        logger.report('info', ACTION3, state);
         const expectedBuffer = [{
             timestamp: Date.now(), // fake time
             extra: {},
-            state: {},
+            state,
             level: 'info',
             action: ACTION2,
         }, {
             timestamp: Date.now(),
             extra: {},
-            state: {},
+            state,
             level: 'info',
             action: ACTION3,
         }];
@@ -73,11 +66,11 @@ describe('Logger', () => {
     });
 
     it('should flush if given interval has passed', () => {
-        const stub = sinon.stub(Logster.prototype, 'flush');
-        const logger = new Logster({ url: 'http://mock/log', maxBufferLength: 20, interval: 500 });
+        const stub = sinon.stub(WebCLS.prototype, 'flush');
+        const logger = new WebCLS({ url: 'http://mock/log', maxBufferLength: 20, interval: 500 });
 
-        logger.report('info', ACTION1, STATE);
-        logger.report('info', ACTION2, STATE);
+        logger.report('info', ACTION1, state);
+        logger.report('info', ACTION2, state);
 
         clock.tick(600);
         stub.called.should.be.true;
@@ -86,26 +79,26 @@ describe('Logger', () => {
 
     it('should overwrite default flush', () => {
         const __send__ = sinon.spy();
-        const logger = new Logster({
+        const logger = new WebCLS({
             url: 'http://mock/log',
             maxBufferLength: 2,
             sessionIdRequired: false,
             __send__
         });
 
-        logger.report('info', ACTION1, STATE);
-        logger.report('info', ACTION2, STATE);
+        logger.report('info', ACTION1, state);
+        logger.report('info', ACTION2, state);
 
         const expectedLogs = [{
             timestamp: Date.now(), // fake time
             extra: {},
-            state: {},
+            state,
             level: 'info',
             action: ACTION1,
         }, {
             timestamp: Date.now(),
             extra: {},
-            state: {},
+            state,
             level: 'info',
             action: ACTION2,
         }];
@@ -117,14 +110,14 @@ describe('Logger', () => {
     it('should return a empty promise if sessionId is required and not set', () => {
         let logger;
         const stub = (() => {
-            const originalFlush = Logster.prototype.flush;
-            return sinon.stub(Logster.prototype, 'flush').callsFake((...args) => originalFlush.apply(logger, args));
+            const originalFlush = WebCLS.prototype.flush;
+            return sinon.stub(WebCLS.prototype, 'flush').callsFake((...args) => originalFlush.apply(logger, args));
         })();
 
-        logger = new Logster({ url: 'http://mock/log', maxBufferLength: 2, sessionIdRequired: true });
+        logger = new WebCLS({ url: 'http://mock/log', maxBufferLength: 2, sessionIdRequired: true });
 
-        logger.report('info', ACTION1, STATE);
-        logger.report('info', ACTION2, STATE);
+        logger.report('info', ACTION1, state);
+        logger.report('info', ACTION2, state);
 
         stub.calledOnce.should.be.true;
         stub.firstCall.returnValue.should.be.a('Promise');
@@ -138,7 +131,7 @@ describe('Logger', () => {
 
     it('should fetch if sessionId is set and required', () => {
         const __send__ = sinon.spy();
-        const logger = new Logster({
+        const logger = new WebCLS({
             url: 'http://mock/log',
             maxBufferLength: 2,
             sessionIdRequired: true,
@@ -147,8 +140,8 @@ describe('Logger', () => {
 
         logger.setSessionId('ID');
 
-        logger.report('info', ACTION1, STATE);
-        logger.report('info', ACTION2, STATE);
+        logger.report('info', ACTION1, state);
+        logger.report('info', ACTION2, state);
 
         __send__.called.should.be.true;
         __send__.getCalls()[0].args[1].should.be.equal('ID');
@@ -157,26 +150,26 @@ describe('Logger', () => {
     it('should run all the hooks', () => {
         const spy1 = sinon.spy();
         const spy2 = sinon.spy();
-        const logger = new Logster({
+        const logger = new WebCLS({
             url: 'http://mock/log',
             maxBufferLength: 4,
         });
         logger.addHook(spy1);
         logger.addHook(spy2);
 
-        logger.report('info', ACTION1, STATE);
-        logger.report('info', ACTION2, STATE);
+        logger.report('info', ACTION1, state);
+        logger.report('info', ACTION2, state);
 
         const expectedLogs = [{
             timestamp: Date.now(), // fake time
             extra: {},
-            state: {},
+            state,
             level: 'info',
             action: ACTION1,
         }, {
             timestamp: Date.now(),
             extra: {},
-            state: {},
+            state,
             level: 'info',
             action: ACTION2,
         }];
@@ -192,7 +185,7 @@ describe('Logger', () => {
         const extraParams = { key: 'value' };
         const spy = sinon.spy();
 
-        const logger = new Logster({
+        const logger = new WebCLS({
             url: 'http://mock/log',
             maxBufferLength: 1,
             __send__: spy,
@@ -203,12 +196,12 @@ describe('Logger', () => {
 
         logger.setExtraParams('somekey', extraParams);
 
-        logger.report('info', ACTION1, STATE);
+        logger.report('info', ACTION1, state);
 
         const expectedLogs = [{
             timestamp: Date.now(), // fake time
             extra: { somekey: extraParams },
-            state: {},
+            state,
             level: 'info',
             action: ACTION1,
         }];
@@ -217,7 +210,7 @@ describe('Logger', () => {
     });
 
     it('should unset session id', () => {
-        const logger = new Logster({
+        const logger = new WebCLS({
             url: 'http://mock/log',
             maxBufferLength: 1,
         });
@@ -229,38 +222,25 @@ describe('Logger', () => {
         expect(logger.sessionId).to.be.a('undefined');
     });
 
-    it('should add filters properly', () => {
-        const logger = new Logster({
-            url: 'http://mock/log',
-            maxBufferLength: 18,
-        });
-        logger.setActionFilter(() => null);
+    it('should run all reporter functions', () => {
+        const spy = sinon.spy();
+        const { report } = WebCLS.prototype;
+        WebCLS.prototype.report = spy;
 
-        logger.report('info', ACTION1, STATE);
-        logger.report('info', ACTION2, STATE);
+        const logger = new WebCLS({ url: 'http://mock/log' });
 
-        let expectedBuffer = [];
-        logger.buffer.getBuffer().should.be.eql(expectedBuffer);
+        logger.info('log1');
+        logger.warn('log2');
+        logger.error('log3');
+        logger.emerg('log4');
+        logger.debug('log5');
 
-        logger.setActionFilter(f => f);
-        logger.setStateFilter(f => f);
+        spy.getCalls()[0].args.should.be.eql(['info', 'log1', undefined]);
+        spy.getCalls()[1].args.should.be.eql(['warn', 'log2', undefined]);
+        spy.getCalls()[2].args.should.be.eql(['error', 'log3', undefined]);
+        spy.getCalls()[3].args.should.be.eql(['emerg', 'log4', undefined]);
+        spy.getCalls()[4].args.should.be.eql(['debug', 'log5', undefined]);
 
-        logger.report('info', ACTION1, STATE);
-        logger.report('info', ACTION2, STATE);
-        expectedBuffer = [{
-            timestamp: Date.now(), // fake time
-            extra: {},
-            state: STATE,
-            level: 'info',
-            action: ACTION1,
-        }, {
-            timestamp: Date.now(),
-            extra: {},
-            state: STATE,
-            level: 'info',
-            action: ACTION2,
-        }];
-
-        logger.buffer.getBuffer().should.be.eql(expectedBuffer);
+        WebCLS.prototype.report = report;
     });
 });

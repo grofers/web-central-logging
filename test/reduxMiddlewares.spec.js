@@ -8,24 +8,43 @@ import { actionLogger, crashReporter } from '../src/reduxMiddlewares';
 
 const should = chai.should();
 
+const action1 = { type: 'MOCK_ACTION' };
+const action2 = { type: 'MOCK_ACTION2' };
+const state = { key: 'value' };
+const state2 = { key: 'value2' };
+
 describe('actionLogger', () => {
-    it('should logs actions', () => {
-        const state = { key: 'value' };
-        const clock = sinon.useFakeTimers();
-        const store = {
-            getState: sinon.stub().returns(state),
+    let clock;
+    let store;
+    let next;
+    let logger;
+    let getState;
+
+    beforeEach(() => {
+        clock = sinon.useFakeTimers();
+        getState = sinon
+            .stub()
+            .onCall(0)
+            .returns(state)
+            .onCall(1)
+            .returns(state2);
+        store = {
+            getState
         };
-        const next = sinon.spy();
-        const action1 = { type: 'MOCK_ACTION' };
-        const action2 = { type: 'MOCK_ACTION2' };
-        const __send__ = sinon.spy();
-        const logger = new Logger({
+        next = sinon.spy();
+
+        logger = new Logger({
             url: 'mock',
-            maxBufferLength: 2,
-            __send__,
-            sessionIdRequired: false,
         });
+    });
+
+    after(() => {
+        clock.restore();
+    });
+
+    it('should logs actions', () => {
         actionLogger(logger)(store)(next)(action1);
+        getState.resetHistory();
         actionLogger(logger)(store)(next)(action2);
 
         const expectedLogs = [{
@@ -45,9 +64,47 @@ describe('actionLogger', () => {
         next.calledTwice.should.be.true;
         next.getCalls()[0].args[0].should.be.eql(action1);
         next.getCalls()[1].args[0].should.be.eql(action2);
-        __send__.calledOnce.should.be.true;
-        __send__.calledWith(expectedLogs).should.be.true;
+
+        logger.buffer.getBuffer().should.be.eql(expectedLogs);
         clock.restore();
+    });
+
+    it('should add filters properly', () => {
+        actionLogger(logger, { actionFilter: () => null })(store)(next)(action1);
+        actionLogger(logger, { actionFilter: () => null })(store)(next)(action2);
+
+        let expectedBuffer = [];
+        logger.buffer.getBuffer().should.be.eql(expectedBuffer);
+
+        const actionFilter = f => f;
+        const stateFilter = f => f;
+
+        getState.resetHistory();
+        actionLogger(logger, { actionFilter, stateFilter })(store)(next)(action1);
+
+        getState.resetHistory();
+        actionLogger(logger, { actionFilter, stateFilter })(store)(next)(action1);
+
+        expectedBuffer = [{
+            timestamp: Date.now(), // fake time
+            extra: {},
+            state: {
+                before: state,
+                after: state2,
+            },
+            level: 'info',
+            action: action1,
+        }, {
+            timestamp: Date.now(),
+            extra: {},
+            state: {
+                before: state,
+                after: state2,
+            },
+            level: 'info',
+            action: action1,
+        }];
+        logger.buffer.getBuffer().should.be.eql(expectedBuffer);
     });
 });
 
