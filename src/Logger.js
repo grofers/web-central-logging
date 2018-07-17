@@ -72,13 +72,18 @@ class Logger {
             }
             const self = this;
             this._oldOnerrorHandler = window.error;
-            window.onerror = function handleGlobalError(...args) {
+            window.onerror = function handleGlobalError(errorMsg, url, lineNumber, column, errorObj) {
+                self.error(`Error: ${errorMsg} Script: ${url} Line: ${lineNumber} Column: ${column} StackTrace: ${errorObj}`);
                 self.flush();
                 if (self._oldOnerrorHandler) {
-                    return self._oldOnerrorHandler.apply(this, args);
+                    // eslint-disable-next-line
+                    return self._oldOnerrorHandler.apply(this, arguments);
                 }
                 return false;
             };
+            window.addEventListener('unhandledRejection', (event) => {
+                self.error(`Unhandled promise rejection: ${event.reason}`);
+            });
             this._onErrorHandlerInstalled = true;
         }
     }
