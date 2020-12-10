@@ -43,7 +43,7 @@
     "supertest": "^3.0.0"
   },
   "dependencies": {
-    "bunyan": "^1.8.8",
+    "bunyan": "^1.8.14",
     "bunyan-syslog": "git://github.com/grofers/node-bunyan-syslog.git#9bdb9eb62a763c7d30e032a619138032d5ff8771",
     "isomorphic-fetch": "^2.2.1"
   }
