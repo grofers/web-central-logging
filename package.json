@@ -44,7 +44,7 @@
   },
   "dependencies": {
     "bunyan": "^1.8.8",
-    "bunyan-syslog": "git://github.com/grofers/node-bunyan-syslog.git#9bdb9eb62a763c7d30e032a619138032d5ff8771",
+    "bunyan-syslog": "0.3.3",
     "isomorphic-fetch": "^2.2.1"
   }
 }
